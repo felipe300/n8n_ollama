@@ -1,0 +1,11 @@
+# Data folders (local state and databases)
+n8n_data/
+ollama_data/
+open-webui/
+
+# Environment variables
+.env
+
+# OS specific files
+.DS_Store
+Thumbs.db
