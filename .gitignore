@@ -1,5 +1,6 @@
 # Data folders (local state and databases)
 n8n_data/
+n8n_files/
 ollama_data/
 open-webui/
 

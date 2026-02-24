@@ -47,7 +47,8 @@ services:
   n8n:
     image: n8nio/n8n
     container_name: n8n
-    user: "${USER_ID}:${GROUP_ID}"
+    # user: "${USER_ID}:${GROUP_ID}"
+    user: "1000:1000"
     restart: always
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -62,8 +63,14 @@ services:
       - WEBHOOK_URL=http://localhost:5678/
       - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_BLOCK_FS_WRITE_ACCESS=false
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+      - N8N_RESTRICT_FILE_ACCESS_TO=/data;/home/node/.n8n-files
+      - N8N_ALLOWED_FILESYSTEM_PATHS=/data,/home/node/.n8n-files
     volumes:
       - ./n8n_data:/home/node/.n8n
+      - ./n8n_files:/data
     depends_on:
       - ollama
 
@@ -98,10 +105,10 @@ Before starting the containers, you must ensure the local folders are writable b
 To avoid `EACCES: permission denied` errors, create the data directories and set the correct ownership before starting the containers:
 
 ```sh
-mkdir -p n8n_data ollama_data open-webui
+mkdir -p n8n_data n8n_files ollama_data open-webui
 
-sudo chown -R 1000:1000 ./n8n_data ./ollama_data ./open-webui
-chmod -R 775 ./n8n_data ./ollama_data ./open-webui
+sudo chown -R 1000:1000 ./n8n_data ./n8n_files ./ollama_data ./open-webui
+chmod -R 775 ./n8n_data ./n8n_files ./ollama_data ./open-webui
 ```
 
 **Step 2: Pull your Models**
