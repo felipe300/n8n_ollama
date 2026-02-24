@@ -25,7 +25,7 @@ This repository contains the configuration to run a fully local AI automation pi
 
 Your local setup will communicate over your internal Docker network:
 
-- n8n → talks to → Ollama API (Port 11434)
+- n8n → talks to → Ollama API (Port 11435)
 - GPT-OSS → talks to → Ollama API
 
 3. Quick Start (Docker Compose)
@@ -89,7 +89,7 @@ services:
 
 > [!WARNING]
 > This process may take some time
-> wait 30 to 1 minute, just to be sure
+> wait 30 sec to 1 minute, just to be sure
 
 > [!IMPORTANT]
 > Remember to add a volume to persist your data
