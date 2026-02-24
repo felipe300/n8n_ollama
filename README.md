@@ -30,23 +30,42 @@ Your local setup will communicate over your internal Docker network:
 
 3. Quick Start (Docker Compose)
 
-Create a `docker-compose.yml` file and include the following services.
+Crete docker-compose file, service folder, and the services for the project
+
+```sh
+touch docker-compose.yml
+mkdir services/
+touch ./services/ollama.yml ./services/n8n.yml ./services/open-webui.yml
+```
 
 The following configuration ensures that the containerized n8n has the correct permissions and networking access to both the Docker Ollama instance and your host machine.
 
-```yaml
-services:
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
-    ports:
-      - "11435:11434"
-    volumes:
-      - ./ollama_data:/root/.ollama
+- `docker-compose.yml`
 
+```yml
+---
+name: my-ia-stack
+
+networks:
+  ai-network:
+    driver: bridge
+
+include:
+  - ./services/ollama.yml
+  - ./services/n8n.yml
+  - ./services/open-webui.yml
+```
+
+- `services/n8n.yml`
+
+```yml
+---
+services:
   n8n:
     image: n8nio/n8n
     container_name: n8n
+    networks:
+      - ai-network
     # user: "${USER_ID}:${GROUP_ID}"
     user: "1000:1000"
     restart: always
@@ -69,20 +88,48 @@ services:
       - N8N_RESTRICT_FILE_ACCESS_TO=/data;/home/node/.n8n-files
       - N8N_ALLOWED_FILESYSTEM_PATHS=/data,/home/node/.n8n-files
     volumes:
-      - ./n8n_data:/home/node/.n8n
-      - ./n8n_files:/data
+      - ../n8n_data:/home/node/.n8n
+      - ../n8n_files:/data
     depends_on:
       - ollama
+```
 
+> [!IMPORTANT]
+> If you want to test only n8n without ollama
+> use `docker compose up -d --no-deps n8n`
+
+- `services/ollama.yml`
+
+```yml
+---
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    networks:
+      - ai-network
+    ports:
+      - "11435:11434"
+    volumes:
+      - ../ollama_data:/root/.ollama
+```
+
+- `services/open-webui.yml`
+
+```yml
+---
+services:
   gpt-oss:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
+    networks:
+      - ai-network
     ports:
       - "3000:8080"
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
     volumes:
-      - ./open-webui:/app/backend/data
+      - ../open-webui:/app/backend/data
     depends_on:
       - ollama
 ```
@@ -115,7 +162,7 @@ chmod -R 775 ./n8n_data ./n8n_files ./ollama_data ./open-webui
 
 Once Ollama is running, you need to download a model to use. Open your terminal and run:
 
-```bash
+```sh
 # Run docker compose
 docker compose up -d
 docker compose down
@@ -139,6 +186,7 @@ Open n8n at `http://localhost:5678`. When adding an Ollama node, use the followi
 
 ## Usage Examples
 
+- **Read/Write Files**: Create a File and add some data. Then Read it.
 - **Email Summarizer**: Fetch unread emails via n8n → Send text to Ollama → Post summary to Slack.
 - **Local Document QA**: Upload PDFs to a folder → n8n parses text → Ollama answers questions based on content.
 - **Content Calendar**: Use GPT-OSS to brainstorm ideas → n8n schedules them into a local database.

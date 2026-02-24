@@ -1,0 +1,11 @@
+---
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    networks:
+      - ai-network
+    ports:
+      - "11435:11434"
+    volumes:
+      - ../ollama_data:/root/.ollama
